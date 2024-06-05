@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <DUT Name="E_FSM_AmeCltSq" Id="{a1905c1b-7beb-05e2-26b5-30c7047e48c0}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+{attribute 'strict'}
+TYPE E_FSM_AmeCltSq :
+(
+	IDLE,
+	CREATE_MSG_TO_SEND,
+	CALL_SEND_RCV_SQ,
+	ERROR,
+	DONE
+);
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

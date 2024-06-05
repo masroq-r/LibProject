@@ -3,21 +3,26 @@
   <POU Name="Testing" Id="{b6acff85-0853-0c5e-1d96-b2ec4e069e6e}" SpecialFunc="None">
     <Declaration><![CDATA[PROGRAM Testing
 VAR
-	_I_AmeClt	:I_AmeClt := APIs._AmeClt;
-	_sSfc		:STRING := 'Testing_SFC';
+	_I_AmeClt				:I_AmeClt := APIs._AmeClt;
+	_sSfc					:STRING := 'Testing_SFC';
+	_sMsgToSend				:STRING(P_AmeClt.MAX_SIZE_MSG_TO_SEND);
+	_sMsgReceived			:STRING(P_AmeClt.MAX_SIZE_MSG_TO_RCV);
 	
-	_bAssyComplete	:BOOL;
+	_bAssyComplete			:BOOL;
 	_uiAssyCompleteCycles	:UINT;
+	
 END_VAR
 ]]></Declaration>
     <Implementation>
       <ST><![CDATA[IF _bAssyComplete THEN
 	_uiAssyCompleteCycles := _uiAssyCompleteCycles + 1;
 END_IF
-
 IF _bAssyComplete  AND_THEN _I_AmeClt.AssyComplete_3011(_sSfc, E_AssyState.PASS, 1) THEN
+	_sMsgToSend := _I_AmeClt.sMsgToSend;
+	_sMsgReceived := _I_AmeClt.sMsgReceived;
 	_bAssyComplete := FALSE;
-END_IF]]></ST>
+END_IF
+]]></ST>
     </Implementation>
   </POU>
 </TcPlcObject>

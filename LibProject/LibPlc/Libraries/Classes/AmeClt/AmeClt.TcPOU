@@ -3,23 +3,13 @@
   <POU Name="AmeClt" Id="{7afb484f-e0ae-40d6-9e55-6bf9b6778827}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK PUBLIC AmeClt EXTENDS TcpIpClt Implements I_AmeClt
 VAR
-	_sMsgToSend			:STRING;
+	_sMsgToSend			:STRING(P_AmeClt.MAX_SIZE_MSG_TO_SEND);
+	_sMsgReceived		:STRING(P_AmeClt.MAX_SIZE_MSG_TO_RCV);
 	_sSeparator			:STRING(1) 	:= '|';
-	
-	
-	_eFSM_SendRcvSq		:(
-						IDLE_SendRcvSq,
-						OPEN_SOCKET_SendRcvSq,
-						SEND_DATA_SendRcvSq,
-						RCV_DATA_SendRcvSq,
-						ERROR_SendRcvSq,
-						DONE_SendRcvSq);
-	_eFSM_AmeClientSq	:(
-						IDLE_AmeClientSq,
-						CREATE_MSG_TO_SEND_AmeClientSq,
-						CALL_SEND_RCV_SQ_AmeClientSq,
-						ERROR_AmeClientSq,
-						DONE_AmeClientSq);
+	_eFSM_SendRcvSqLastState	:E_FSM_SendRcvSq;
+	_eFSM_SendRcvSq				:E_FSM_SendRcvSq;
+	_eFSM_AmeCltSqLastState		:E_FSM_AmeCltSq;
+	_eFSM_AmeCltSq				:E_FSM_AmeCltSq;
 END_VAR
 
 VAR CONSTANT
@@ -33,6 +23,7 @@ END_VAR
     <Folder Name="Methods" Id="{e0a97ff2-9df1-0c9b-061c-09c9ad1cf88c}">
       <Folder Name="Assy" Id="{10fdf523-8c5a-0a0d-38dd-3b31e75924fd}" />
     </Folder>
+    <Folder Name="Properties" Id="{0423cffa-5213-0a9c-0b47-bf2fda360f8e}" />
     <Method Name="AssyComplete_3011" Id="{4067330e-bc67-035b-24b2-01db049816dd}" FolderPath="Methods\Assy\">
       <Declaration><![CDATA[METHOD PUBLIC AssyComplete_3011 : BOOL
 VAR_INPUT
@@ -49,11 +40,16 @@ VAR
 END_VAR
 ]]></Declaration>
       <Implementation>
-        <ST><![CDATA[CASE _eFSM_AmeClientSq OF
-	IDLE_AmeClientSq:
-		THIS^._eFSM_AmeClientSq := CREATE_MSG_TO_SEND_AmeClientSq;
+        <ST><![CDATA[CASE _eFSM_AmeCltSq OF
+	E_FSM_AmeCltSq.IDLE:
+		IF THIS^._eFSM_SendRcvSq = E_FSM_SendRcvSq.ERROR THEN
+			THIS^._eFSM_SendRcvSq := E_FSM_SendRcvSq.IDLE;
+		END_IF
 		
-	CREATE_MSG_TO_SEND_AmeClientSq:
+		THIS^._eFSM_AmeCltSqLastState := E_FSM_AmeCltSq.IDLE;
+		THIS^._eFSM_AmeCltSq := E_FSM_AmeCltSq.CREATE_MSG_TO_SEND;
+		
+	E_FSM_AmeCltSq.CREATE_MSG_TO_SEND:
 		_sState	:= INT_TO_STRING(eState);
 		_sOpIndex := USINT_TO_STRING(usiOpIndex);
 		
@@ -89,26 +85,31 @@ END_VAR
 			_bError := TRUE;
 		END_IF
 		
-		THIS^._eFSM_AmeClientSq := CALL_SEND_RCV_SQ_AmeClientSq;
+		THIS^._eFSM_AmeCltSqLastState := E_FSM_AmeCltSq.CREATE_MSG_TO_SEND;
+		THIS^._eFSM_AmeCltSq := E_FSM_AmeCltSq.CALL_SEND_RCV_SQ;
 		IF _bError THEN
-			THIS^._eFSM_AmeClientSq := ERROR_AmeClientSq;
+			THIS^._eFSM_AmeCltSq := E_FSM_AmeCltSq.ERROR;
 		END_IF
 		
-	CALL_SEND_RCV_SQ_AmeClientSq:
+	E_FSM_AmeCltSq.CALL_SEND_RCV_SQ:
 		IF SendRcvSq() THEN
-			THIS^._eFSM_AmeClientSq := DONE_AmeClientSq;
+			THIS^._eFSM_AmeCltSqLastState := E_FSM_AmeCltSq.CALL_SEND_RCV_SQ;
+			THIS^._eFSM_AmeCltSq := E_FSM_AmeCltSq.DONE;
 		END_IF
 		
 		IF bError THEN
-			THIS^._eFSM_AmeClientSq := ERROR_AmeClientSq;
+			THIS^._eFSM_AmeCltSqLastState := E_FSM_AmeCltSq.CALL_SEND_RCV_SQ;
+			THIS^._eFSM_AmeCltSq := E_FSM_AmeCltSq.ERROR;
 		END_IF
 		
-	ERROR_AmeClientSq:
-		THIS^._eFSM_AmeClientSq := DONE_AmeClientSq;
+	E_FSM_AmeCltSq.ERROR:
+		AssyComplete_3011 := TRUE;
 		
-	DONE_AmeClientSq:
-		THIS^._eFSM_AmeClientSq := IDLE_AmeClientSq;
-		AssyComplete_3011 := TRUE;		
+	E_FSM_AmeCltSq.DONE:
+		AssyComplete_3011 := TRUE;
+		
+		THIS^._eFSM_AmeCltSqLastState := E_FSM_AmeCltSq.DONE;
+		THIS^._eFSM_AmeCltSq := E_FSM_AmeCltSq.IDLE;	
 END_CASE
 
 
@@ -121,39 +122,87 @@ END_CASE
 ]]></Declaration>
       <Implementation>
         <ST><![CDATA[CASE THIS^._eFSM_SendRcvSq OF
-	IDLE_SendRcvSq:
-		THIS^._eFSM_SendRcvSq := OPEN_SOCKET_SendRcvSq;
+	E_FSM_SendRcvSq.IDLE:
+		//IF SUPER^._eFSM_TcpIpClt = E_FSM_TcpIpClt.ERROR THEN
+		//	SUPER^._eFSM_TcpIpClt := E_FSM_TcpIpClt.IDLE;
+		//END_IF
+		//
+		//THIS^._eFSM_SendRcvSqLastState := E_FSM_SendRcvSq.IDLE;	
+		//THIS^._eFSM_SendRcvSq := E_FSM_SendRcvSq.OPEN_SOCKET;
+		IF Reset() THEN
+			THIS^._eFSM_SendRcvSqLastState := E_FSM_SendRcvSq.IDLE;	
+			THIS^._eFSM_SendRcvSq := E_FSM_SendRcvSq.OPEN_SOCKET;
+		END_IF
 		
-	OPEN_SOCKET_SendRcvSq:
+	E_FSM_SendRcvSq.OPEN_SOCKET:
 		IF OpenSocket() THEN
-			THIS^._eFSM_SendRcvSq := SEND_DATA_SendRcvSq;
+			THIS^._eFSM_SendRcvSqLastState := E_FSM_SendRcvSq.OPEN_SOCKET;
+			THIS^._eFSM_SendRcvSq := E_FSM_SendRcvSq.SEND_DATA;
 		END_IF
 		
 		IF bError THEN
-			THIS^._eFSM_SendRcvSq := ERROR_SendRcvSq;
+			THIS^._eFSM_SendRcvSqLastState := E_FSM_SendRcvSq.OPEN_SOCKET;
+			THIS^._eFSM_SendRcvSq := E_FSM_SendRcvSq.ERROR;
 		END_IF
 		
-	SEND_DATA_SendRcvSq:
+	E_FSM_SendRcvSq.SEND_DATA:
 		IF Send(ADR(_sMsgToSend), f_StringLen(ADR(_sMsgToSend), SIZEOF(_sMsgToSend))) THEN
-			THIS^._eFSM_SendRcvSq := RCV_DATA_SendRcvSq;
+			THIS^._eFSM_SendRcvSqLastState := E_FSM_SendRcvSq.SEND_DATA;
+			THIS^._eFSM_SendRcvSq := E_FSM_SendRcvSq.RCV_DATA;
 		END_IF
 		
 		IF bError THEN
-			THIS^._eFSM_SendRcvSq := ERROR_SendRcvSq;
+			THIS^._eFSM_SendRcvSqLastState := E_FSM_SendRcvSq.SEND_DATA;
+			THIS^._eFSM_SendRcvSq := E_FSM_SendRcvSq.ERROR;
 		END_IF
 		
-	RCV_DATA_SendRcvSq:
-		THIS^._eFSM_SendRcvSq := DONE_SendRcvSq;
+	E_FSM_SendRcvSq.RCV_DATA:
+		IF Rcv(ADR(_sMsgReceived), SIZEOF(_sMsgReceived)) THEN
+			THIS^._eFSM_SendRcvSqLastState := E_FSM_SendRcvSq.RCV_DATA;
+			THIS^._eFSM_SendRcvSq := E_FSM_SendRcvSq.DONE;
+		END_IF
 		
-	ERROR_SendRcvSq:
+		IF bError THEN
+			THIS^._eFSM_SendRcvSqLastState := E_FSM_SendRcvSq.RCV_DATA;
+			THIS^._eFSM_SendRcvSq := E_FSM_SendRcvSq.ERROR;
+		END_IF
+		
+	E_FSM_SendRcvSq.ERROR:
 		// Error handling could be implemented here
-		THIS^._eFSM_SendRcvSq := DONE_SendRcvSq;
+		SendRcvSq := TRUE;
 		
-	DONE_SendRcvSq:
-		THIS^._eFSM_SendRcvSq := IDLE_SendRcvSq;
-		SendRcvSq := TRUE;		
+	E_FSM_SendRcvSq.DONE:
+		SendRcvSq := TRUE;
+		
+		THIS^._eFSM_SendRcvSqLastState := E_FSM_SendRcvSq.DONE;
+		THIS^._eFSM_SendRcvSq := E_FSM_SendRcvSq.IDLE;
+				
 END_CASE]]></ST>
       </Implementation>
     </Method>
+    <Property Name="sMsgReceived" Id="{e17ffe3d-ef83-0557-1fc5-27cbd6f4ca95}" FolderPath="Properties\">
+      <Declaration><![CDATA[PROPERTY sMsgReceived : STRING(P_AmeClt.MAX_SIZE_MSG_TO_RCV)
+]]></Declaration>
+      <Get Name="Get" Id="{d80a0a36-baca-00ca-36fb-9b754b5ae5e9}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[sMsgReceived := this^._sMsgReceived;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="sMsgToSend" Id="{bd121268-9538-05d6-0392-76db5cfcbf0e}" FolderPath="Properties\">
+      <Declaration><![CDATA[PROPERTY sMsgToSend : STRING(P_AmeClt.MAX_SIZE_MSG_TO_SEND)
+]]></Declaration>
+      <Get Name="Get" Id="{88772ead-00a5-0c8c-0af1-4585fb230212}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[sMsgToSend := THIS^._sMsgToSend;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
   </POU>
 </TcPlcObject>

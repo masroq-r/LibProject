@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <DUT Name="E_FSM_SendRcvSq" Id="{81fc680d-9cb3-03c4-3f0b-086c85b8e67d}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+{attribute 'strict'}
+TYPE E_FSM_SendRcvSq :
+(
+	IDLE := 0,
+	OPEN_SOCKET,
+	SEND_DATA,
+	RCV_DATA,
+	ERROR,
+	DONE
+);
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

@@ -5,17 +5,47 @@
 VAR_INPUT
 	pSrc		:POINTER TO BYTE;
 	pDst		:POINTER TO BYTE;
-	udiSize		:UDINT;
+	udiSize		:UDINT;				// String size to extract
+	udiDstSize	:UDINT;				// Destination size
 END_VAR
 VAR
+	_udiDstSize	:UDINT;				// Destination size
 	_byNull		:BYTE := 16#00;
 	_udiIndex	:UDINT;
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[FOR _udiIndex := 1 TO udiSize DO
-	;
-END_FOR]]></ST>
+      <ST><![CDATA[_udiDstSize := udiDstSize - 1;
+
+// String size to extract must not be geater than destination size
+IF udiSize > _udiDstSize THEN
+	RETURN;
+END_IF
+
+// Extracting data
+FOR _udiIndex := 1 TO udiSize DO
+	IF pSrc^ <> _byNull THEN
+		pDst^ := pSrc^;
+	ELSE
+		EXIT;
+	END_IF
+	
+	pSrc := pSrc + SIZEOF(BYTE);
+	pDst := pDst + SIZEOF(BYTE);
+END_FOR
+
+// Clean destination data
+FOR _udiIndex := _udiIndex TO _udiDstSize DO
+	IF pDst^ <> _byNull THEN
+		pDst^ := _byNull;
+	ELSE
+		EXIT;
+	END_IF
+	
+	pDst := pDst + SIZEOF(BYTE);
+END_FOR
+
+f_StringLeft := TRUE;]]></ST>
     </Implementation>
   </POU>
 </TcPlcObject>

@@ -23,11 +23,21 @@
     <Compile Include="Libraries\Classes\AmeClt\AmeClt.TcPOU">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Libraries\Classes\AmeClt\E_AssyState.TcDUT">
+    <Compile Include="Libraries\Classes\AmeClt\Enums\E_AssyState.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Libraries\Classes\AmeClt\Enums\E_FSM_AmeCltSq.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Libraries\Classes\AmeClt\Enums\E_FSM_SendRcvSq.TcDUT">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Libraries\Classes\AmeClt\I_AmeClt.TcIO">
       <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Libraries\Classes\AmeClt\P_AmeClt.TcGVL">
+      <SubType>Code</SubType>
+      <LinkAlways>true</LinkAlways>
     </Compile>
     <Compile Include="Libraries\Classes\TcpIp\Client\E_FSM_TcpIpClt.TcDUT">
       <SubType>Code</SubType>
@@ -60,6 +70,7 @@
   <ItemGroup>
     <Folder Include="Libraries" />
     <Folder Include="Libraries\Classes\AmeClt" />
+    <Folder Include="Libraries\Classes\AmeClt\Enums" />
     <Folder Include="Libraries\Classes\TcpIp" />
     <Folder Include="Libraries\Classes\TcpIp\Client" />
     <Folder Include="Libraries\Functions" />

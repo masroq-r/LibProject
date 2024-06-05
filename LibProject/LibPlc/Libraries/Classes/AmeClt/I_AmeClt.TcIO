@@ -3,7 +3,11 @@
   <Itf Name="I_AmeClt" Id="{4f980f3b-ac59-01a1-1130-1f1838b80c81}">
     <Declaration><![CDATA[INTERFACE I_AmeClt
 ]]></Declaration>
-    <Method Name="AssyComplete_3011" Id="{7906d80b-f5f0-0a7a-3cec-f6f182544248}">
+    <Folder Name="Methods" Id="{322b6018-bac8-05d9-39ca-0b39db206481}">
+      <Folder Name="Assy" Id="{4e422c10-96dd-0f16-1362-70e00521f7be}" />
+    </Folder>
+    <Folder Name="Properties" Id="{764037f7-87b5-0582-31c5-567b312eb851}" />
+    <Method Name="AssyComplete_3011" Id="{7906d80b-f5f0-0a7a-3cec-f6f182544248}" FolderPath="Methods\Assy\">
       <Declaration><![CDATA[METHOD PUBLIC AssyComplete_3011 : BOOL
 VAR_INPUT
 	sSFC		:STRING;
@@ -12,5 +16,17 @@ VAR_INPUT
 END_VAR
 ]]></Declaration>
     </Method>
+    <Property Name="sMsgReceived" Id="{8259869f-7855-0f20-397b-65ea41301b0b}" FolderPath="Properties\">
+      <Declaration><![CDATA[PROPERTY sMsgReceived : STRING(P_AmeClt.MAX_SIZE_MSG_TO_RCV)]]></Declaration>
+      <Get Name="Get" Id="{19b9ddc2-c7e9-0285-3a59-17831a344096}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="sMsgToSend" Id="{ef242227-b893-0d8c-341a-d3c3c88142d9}" FolderPath="Properties\">
+      <Declaration><![CDATA[PROPERTY sMsgToSend : STRING(P_AmeClt.MAX_SIZE_MSG_TO_SEND)]]></Declaration>
+      <Get Name="Get" Id="{cc511d1c-f93f-02ab-3274-35d6716ccaf8}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
   </Itf>
 </TcPlcObject>

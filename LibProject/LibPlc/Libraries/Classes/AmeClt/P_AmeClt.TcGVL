@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <GVL Name="P_AmeClt" Id="{577cfc17-fe10-057e-0c17-021c822b11b9}" ParameterList="True">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+VAR_GLOBAL CONSTANT
+	MAX_SIZE_MSG_TO_SEND	:UINT := 1000;
+	MAX_SIZE_MSG_TO_RCV		:UINT := 1000;
+END_VAR]]></Declaration>
+  </GVL>
+</TcPlcObject>

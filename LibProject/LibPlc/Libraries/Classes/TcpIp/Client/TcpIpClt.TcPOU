@@ -22,7 +22,8 @@ VAR
 	_bError				:BOOL;
 	_udiErrorId			:UDINT;
 	
-	_eFSM_TcpIpClt		:E_FSM_TcpIpClt;
+	_eFSM_TcpIpClLastState	:E_FSM_TcpIpClt;
+	_eFSM_TcpIpClt			:E_FSM_TcpIpClt;
 END_VAR
 ]]></Declaration>
     <Implementation>
@@ -52,12 +53,14 @@ END_VAR]]></Declaration>
 		THIS^._bError := FALSE;
 		THIS^._udiErrorId := 0;
 		
+		THIS^._eFSM_TcpIpClLastState := E_FSM_TcpIpClt.IDLE;
 		THIS^._eFSM_TcpIpClt := E_FSM_TcpIpClt.CLOSE_SOCKET;
 		
 	E_FSM_TcpIpClt.CLOSE_SOCKET:
 		_bExecute := TRUE;
 		
 		IF THIS^._CloseSocket.bBusy THEN
+			THIS^._eFSM_TcpIpClLastState := E_FSM_TcpIpClt.CLOSE_SOCKET;
 			THIS^._eFSM_TcpIpClt := E_FSM_TcpIpClt.WAIT_SOCKET_CLOSED;
 			
 		END_IF
@@ -66,24 +69,28 @@ END_VAR]]></Declaration>
 		_bExecute := FALSE;
 		
 		IF THIS^._CloseSocket.bError THEN
+			THIS^._eFSM_TcpIpClLastState := E_FSM_TcpIpClt.WAIT_SOCKET_CLOSED;
 			THIS^._eFSM_TcpIpClt := E_FSM_TcpIpClt.ERROR;
 			
 		ELSIF NOT THIS^._CloseSocket.bBusy THEN
+			THIS^._eFSM_TcpIpClLastState := E_FSM_TcpIpClt.WAIT_SOCKET_CLOSED;
 			THIS^._eFSM_TcpIpClt := E_FSM_TcpIpClt.DONE;
 			
 		END_IF
 	
 	E_FSM_TcpIpClt.ERROR:
 		THIS^._bError := TRUE;
-		THIS^._udiErrorId := THIS^._OpenSocket.nErrId;
-		
-		THIS^._eFSM_TcpIpClt := E_FSM_TcpIpClt.DONE;
-		
-	E_FSM_TcpIpClt.DONE:
-		//_bExecute := FALSE;
+		THIS^._udiErrorId := THIS^._CloseSocket.nErrId;
 		
 		IF NOT THIS^._CloseSocket.bExecute THEN
 			CloseSocket := TRUE;
+		END_IF
+		
+	E_FSM_TcpIpClt.DONE:
+		
+		IF NOT THIS^._CloseSocket.bExecute THEN
+			CloseSocket := TRUE;
+			THIS^._eFSM_TcpIpClLastState := E_FSM_TcpIpClt.DONE;
 			THIS^._eFSM_TcpIpClt := E_FSM_TcpIpClt.IDLE;
 		END_IF
 END_CASE
@@ -148,12 +155,14 @@ END_VAR]]></Declaration>
 		THIS^._bError := FALSE;
 		THIS^._udiErrorId := 0;
 		
+		THIS^._eFSM_TcpIpClLastState := E_FSM_TcpIpClt.IDLE;
 		THIS^._eFSM_TcpIpClt := E_FSM_TcpIpClt.OPEN_SOCKET;
 		
 	E_FSM_TcpIpClt.OPEN_SOCKET:
 		_bExecute := TRUE;
 		
 		IF THIS^._OpenSocket.bBusy THEN
+			THIS^._eFSM_TcpIpClLastState := E_FSM_TcpIpClt.OPEN_SOCKET;
 			THIS^._eFSM_TcpIpClt := E_FSM_TcpIpClt.WAIT_SOCKET_OPENED;
 			
 		END_IF
@@ -162,9 +171,11 @@ END_VAR]]></Declaration>
 		_bExecute := FALSE;
 		
 		IF THIS^._OpenSocket.bError THEN
+			THIS^._eFSM_TcpIpClLastState := E_FSM_TcpIpClt.WAIT_SOCKET_OPENED;
 			THIS^._eFSM_TcpIpClt := E_FSM_TcpIpClt.ERROR;
 			
 		ELSIF NOT THIS^._OpenSocket.bBusy THEN
+			THIS^._eFSM_TcpIpClLastState := E_FSM_TcpIpClt.WAIT_SOCKET_OPENED;
 			THIS^._eFSM_TcpIpClt := E_FSM_TcpIpClt.DONE;
 			
 		END_IF
@@ -173,13 +184,15 @@ END_VAR]]></Declaration>
 		THIS^._bError := TRUE;
 		THIS^._udiErrorId := THIS^._OpenSocket.nErrId;
 		
-		THIS^._eFSM_TcpIpClt := E_FSM_TcpIpClt.DONE;
+		IF NOT THIS^._OpenSocket.bExecute THEN
+			OpenSocket := TRUE;
+		END_IF	
 		
 	E_FSM_TcpIpClt.DONE:
-		//_bExecute := FALSE;
 		
 		IF NOT THIS^._OpenSocket.bExecute THEN
 			OpenSocket := TRUE;
+			THIS^._eFSM_TcpIpClLastState := E_FSM_TcpIpClt.DONE;
 			THIS^._eFSM_TcpIpClt := E_FSM_TcpIpClt.IDLE;
 		END_IF
 END_CASE
@@ -211,12 +224,14 @@ END_VAR
 		THIS^._bError := FALSE;
 		THIS^._udiErrorId := 0;
 		
-		THIS^._eFSM_TcpIpClt := E_FSM_TcpIpClt.SEND_DATA;
+		THIS^._eFSM_TcpIpClLastState := E_FSM_TcpIpClt.IDLE;
+		THIS^._eFSM_TcpIpClt := E_FSM_TcpIpClt.RECEIVE_DATA;
 		
 	E_FSM_TcpIpClt.RECEIVE_DATA:
 		_bExecute := TRUE;
 		
 		IF THIS^._RcvData.bBusy THEN
+			THIS^._eFSM_TcpIpClLastState := E_FSM_TcpIpClt.RECEIVE_DATA;
 			THIS^._eFSM_TcpIpClt := E_FSM_TcpIpClt.WAIT_DATA_RECEIVED;
 		END_IF
 		
@@ -224,9 +239,11 @@ END_VAR
 		_bExecute := FALSE;
 		
 		IF THIS^._RcvData.bError THEN
+			THIS^._eFSM_TcpIpClLastState := E_FSM_TcpIpClt.WAIT_DATA_RECEIVED;
 			THIS^._eFSM_TcpIpClt := E_FSM_TcpIpClt.ERROR;
 			
 		ELSIF NOT THIS^._RcvData.bBusy THEN
+			THIS^._eFSM_TcpIpClLastState := E_FSM_TcpIpClt.WAIT_DATA_RECEIVED;
 			THIS^._eFSM_TcpIpClt := E_FSM_TcpIpClt.DONE;
 			
 		END_IF
@@ -235,16 +252,17 @@ END_VAR
 		THIS^._bError := TRUE;
 		THIS^._udiErrorId := THIS^._RcvData.nErrId;
 		
-		THIS^._eFSM_TcpIpClt := E_FSM_TcpIpClt.DONE;
+		IF NOT THIS^._RcvData.bExecute THEN
+			Rcv := TRUE;
+		END_IF
 		
 	E_FSM_TcpIpClt.DONE:
 		
 		IF NOT THIS^._RcvData.bExecute THEN
 			Rcv := TRUE;
+			THIS^._eFSM_TcpIpClLastState := E_FSM_TcpIpClt.DONE;
 			THIS^._eFSM_TcpIpClt := E_FSM_TcpIpClt.IDLE;
-		END_IF
-	
-	
+		END_IF	
 END_CASE
 
 THIS^._RcvData(
@@ -254,6 +272,20 @@ THIS^._RcvData(
 				pDest		:= pData, 
 				bExecute	:= _bExecute, 
 				tTimeout	:= THIS^._tTimeOut);]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Reset" Id="{223d792c-9d9f-0a82-01ce-78e5b33e509c}" FolderPath="Methods\">
+      <Declaration><![CDATA[METHOD PROTECTED Reset : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^._bError := FALSE;
+THIS^._eFSM_TcpIpClt := E_FSM_TcpIpClt.IDLE;
+
+IF NOT THIS^._bError AND THIS^._eFSM_TcpIpClt = E_FSM_TcpIpClt.IDLE THEN
+	Reset := TRUE;
+END_IF]]></ST>
       </Implementation>
     </Method>
     <Method Name="Send" Id="{34bb67ac-1e48-4321-b5b8-4612b971103b}" FolderPath="Methods\">
@@ -273,12 +305,14 @@ END_VAR
 		THIS^._bError := FALSE;
 		THIS^._udiErrorId := 0;
 		
+		THIS^._eFSM_TcpIpClLastState := E_FSM_TcpIpClt.IDLE;
 		THIS^._eFSM_TcpIpClt := E_FSM_TcpIpClt.SEND_DATA;
 		
 	E_FSM_TcpIpClt.SEND_DATA:
 		_bExecute := TRUE;
 		
 		IF THIS^._SendData.bBusy THEN
+			THIS^._eFSM_TcpIpClLastState := E_FSM_TcpIpClt.SEND_DATA;
 			THIS^._eFSM_TcpIpClt := E_FSM_TcpIpClt.WAIT_DATA_SENT;
 			
 		END_IF
@@ -287,9 +321,11 @@ END_VAR
 		_bExecute := FALSE;
 		
 		IF THIS^._SendData.bError THEN
+			THIS^._eFSM_TcpIpClLastState := E_FSM_TcpIpClt.WAIT_DATA_SENT;
 			THIS^._eFSM_TcpIpClt := E_FSM_TcpIpClt.ERROR;
 			
 		ELSIF NOT THIS^._SendData.bBusy THEN
+			THIS^._eFSM_TcpIpClLastState := E_FSM_TcpIpClt.WAIT_DATA_SENT;
 			THIS^._eFSM_TcpIpClt := E_FSM_TcpIpClt.DONE;
 			
 		END_IF
@@ -298,12 +334,15 @@ END_VAR
 		THIS^._bError := TRUE;
 		THIS^._udiErrorId := THIS^._SendData.nErrId;
 		
-		THIS^._eFSM_TcpIpClt := E_FSM_TcpIpClt.DONE;
+		IF NOT THIS^._SendData.bExecute THEN
+			Send := TRUE;
+		END_IF;
 		
 	E_FSM_TcpIpClt.DONE:
 		
 		IF NOT THIS^._SendData.bExecute THEN
 			Send := TRUE;
+			THIS^._eFSM_TcpIpClLastState := E_FSM_TcpIpClt.DONE;
 			THIS^._eFSM_TcpIpClt := E_FSM_TcpIpClt.IDLE;
 		END_IF
 END_CASE
