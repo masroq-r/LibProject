@@ -1,0 +1,333 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="TcpIpClt" Id="{58938f4f-a8ab-47b8-b666-cfb1dab3c207}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK PUBLIC TcpIpClt
+VAR_INPUT
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR
+	// Connection configuration var
+	_sSrvNetId			:T_AmsNetId;
+	_sRemoteHost		:T_IPv4Addr;
+	_udiRemotePort		:UDINT;
+	_tTimeOut			:TIME;
+	
+	_OpenSocket			:FB_SocketConnect;
+	_hSocket			:T_HSOCKET;	
+	_CloseSocket		:FB_SocketClose;
+	_SendData			:FB_SocketSend;
+	_RcvData			:FB_SocketReceive;
+	
+	_bError				:BOOL;
+	_udiErrorId			:UDINT;
+	
+	_eFSM_TcpIpClt		:E_FSM_TcpIpClt;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Folder Name="Methods" Id="{2b70056d-b227-0878-1684-0dffa47fc252}" />
+    <Folder Name="Properties" Id="{9273e987-769e-40db-85fb-7cc452d89051}" />
+    <Property Name="bError" Id="{cd14de64-9fc4-46be-b68c-e396264f6d18}" FolderPath="Properties\">
+      <Declaration><![CDATA[PROPERTY PUBLIC bError : BOOL]]></Declaration>
+      <Get Name="Get" Id="{c0cb1529-7f09-44cd-8786-1e03ec77e256}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[bError := THIS^._bError;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Method Name="CloseSocket" Id="{5f858826-20dc-4f70-9b3c-521a67ba85d6}" FolderPath="Methods\">
+      <Declaration><![CDATA[METHOD PROTECTED CloseSocket : BOOL
+VAR_INST
+	_bExecute	:BOOL;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[CASE THIS^._eFSM_TcpIpClt OF
+	E_FSM_TcpIpClt.IDLE:
+		THIS^._bError := FALSE;
+		THIS^._udiErrorId := 0;
+		
+		THIS^._eFSM_TcpIpClt := E_FSM_TcpIpClt.CLOSE_SOCKET;
+		
+	E_FSM_TcpIpClt.CLOSE_SOCKET:
+		_bExecute := TRUE;
+		
+		IF THIS^._CloseSocket.bBusy THEN
+			THIS^._eFSM_TcpIpClt := E_FSM_TcpIpClt.WAIT_SOCKET_CLOSED;
+			
+		END_IF
+	
+	E_FSM_TcpIpClt.WAIT_SOCKET_CLOSED:
+		_bExecute := FALSE;
+		
+		IF THIS^._CloseSocket.bError THEN
+			THIS^._eFSM_TcpIpClt := E_FSM_TcpIpClt.ERROR;
+			
+		ELSIF NOT THIS^._CloseSocket.bBusy THEN
+			THIS^._eFSM_TcpIpClt := E_FSM_TcpIpClt.DONE;
+			
+		END_IF
+	
+	E_FSM_TcpIpClt.ERROR:
+		THIS^._bError := TRUE;
+		THIS^._udiErrorId := THIS^._OpenSocket.nErrId;
+		
+		THIS^._eFSM_TcpIpClt := E_FSM_TcpIpClt.DONE;
+		
+	E_FSM_TcpIpClt.DONE:
+		//_bExecute := FALSE;
+		
+		IF NOT THIS^._CloseSocket.bExecute THEN
+			CloseSocket := TRUE;
+			THIS^._eFSM_TcpIpClt := E_FSM_TcpIpClt.IDLE;
+		END_IF
+END_CASE
+
+THIS^._CloseSocket(
+					sSrvNetId	:= THIS^._sSrvNetId, 
+					hSocket		:= THIS^._hSocket, 
+					bExecute	:= _bExecute, 
+					tTimeout	:= THIS^._tTimeOut);]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="ConnConfigUpd" Id="{37830036-db32-44b1-9a34-1be4f7cf04d0}" FolderPath="Methods\">
+      <Declaration><![CDATA[METHOD PROTECTED ConnConfigUpd : BOOL
+VAR_INPUT
+	sSrvNetId		:T_AmsNetId;
+	sRemoteHost		:T_IPv4Addr;
+	udiRemotePort	:UDINT;
+	tTimeOut		:TIME;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^._sSrvNetId 		:= sSrvNetId;
+THIS^._sRemoteHost		:= sRemoteHost;
+THIS^._udiRemotePort	:= udiRemotePort;
+THIS^._tTimeOut			:= tTimeOut;
+IF THIS^._tTimeOut = T#0S THEN
+	THIS^._tTimeOut := DEFAULT_ADS_TIMEOUT;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="FB_init" Id="{814c74ab-a98f-4b31-97c9-fcc09f8b1b1c}">
+      <Declaration><![CDATA[METHOD FB_init : BOOL
+VAR_INPUT
+	bInitRetains 	: BOOL; // if TRUE, the retain variables are initialized (warm start / cold start)
+	bInCopyCode 	: BOOL;  // if TRUE, the instance afterwards gets moved into the copy code (online change)
+	
+	sSrvNetId		:T_AmsNetId;
+	sRemoteHost		:T_IPv4Addr;
+	udiRemotePort	:UDINT;
+	tTimeOut		:TIME;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^._sSrvNetId 		:= sSrvNetId;
+THIS^._sRemoteHost		:= sRemoteHost;
+THIS^._udiRemotePort	:= udiRemotePort;
+THIS^._tTimeOut			:= tTimeOut;
+IF THIS^._tTimeOut = T#0S THEN
+	THIS^._tTimeOut := DEFAULT_ADS_TIMEOUT;
+END_IF
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="OpenSocket" Id="{39521731-513f-488a-9629-3aae26c72bf9}" FolderPath="Methods\">
+      <Declaration><![CDATA[METHOD PROTECTED OpenSocket : BOOL
+VAR_INST
+	_bExecute	:BOOL;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[CASE THIS^._eFSM_TcpIpClt OF
+	E_FSM_TcpIpClt.IDLE:
+		THIS^._bError := FALSE;
+		THIS^._udiErrorId := 0;
+		
+		THIS^._eFSM_TcpIpClt := E_FSM_TcpIpClt.OPEN_SOCKET;
+		
+	E_FSM_TcpIpClt.OPEN_SOCKET:
+		_bExecute := TRUE;
+		
+		IF THIS^._OpenSocket.bBusy THEN
+			THIS^._eFSM_TcpIpClt := E_FSM_TcpIpClt.WAIT_SOCKET_OPENED;
+			
+		END_IF
+	
+	E_FSM_TcpIpClt.WAIT_SOCKET_OPENED:
+		_bExecute := FALSE;
+		
+		IF THIS^._OpenSocket.bError THEN
+			THIS^._eFSM_TcpIpClt := E_FSM_TcpIpClt.ERROR;
+			
+		ELSIF NOT THIS^._OpenSocket.bBusy THEN
+			THIS^._eFSM_TcpIpClt := E_FSM_TcpIpClt.DONE;
+			
+		END_IF
+		
+	E_FSM_TcpIpClt.ERROR:
+		THIS^._bError := TRUE;
+		THIS^._udiErrorId := THIS^._OpenSocket.nErrId;
+		
+		THIS^._eFSM_TcpIpClt := E_FSM_TcpIpClt.DONE;
+		
+	E_FSM_TcpIpClt.DONE:
+		//_bExecute := FALSE;
+		
+		IF NOT THIS^._OpenSocket.bExecute THEN
+			OpenSocket := TRUE;
+			THIS^._eFSM_TcpIpClt := E_FSM_TcpIpClt.IDLE;
+		END_IF
+END_CASE
+
+THIS^._OpenSocket(
+					sSrvNetId		:= THIS^._sSrvNetId, 
+					sRemoteHost		:= THIS^._sRemoteHost, 
+					nRemotePort		:= THIS^._udiRemotePort, 
+					bExecute		:= _bExecute, 
+					tTimeout 		:= THIS^._tTimeOut, 
+					hSocket			=> THIS^._hSocket);]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Rcv" Id="{37b0bd29-20d0-4658-86f9-62bda19ae769}" FolderPath="Methods\">
+      <Declaration><![CDATA[METHOD PROTECTED Rcv : BOOL
+VAR_INPUT
+	pData	:POINTER TO BYTE;
+	udiMaxLen	:UDINT;
+END_VAR
+
+VAR_INST
+	_bExecute	:BOOL;
+END_VAR
+
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[CASE THIS^._eFSM_TcpIpClt OF
+	E_FSM_TcpIpClt.IDLE:
+		THIS^._bError := FALSE;
+		THIS^._udiErrorId := 0;
+		
+		THIS^._eFSM_TcpIpClt := E_FSM_TcpIpClt.SEND_DATA;
+		
+	E_FSM_TcpIpClt.RECEIVE_DATA:
+		_bExecute := TRUE;
+		
+		IF THIS^._RcvData.bBusy THEN
+			THIS^._eFSM_TcpIpClt := E_FSM_TcpIpClt.WAIT_DATA_RECEIVED;
+		END_IF
+		
+	E_FSM_TcpIpClt.WAIT_DATA_RECEIVED:
+		_bExecute := FALSE;
+		
+		IF THIS^._RcvData.bError THEN
+			THIS^._eFSM_TcpIpClt := E_FSM_TcpIpClt.ERROR;
+			
+		ELSIF NOT THIS^._RcvData.bBusy THEN
+			THIS^._eFSM_TcpIpClt := E_FSM_TcpIpClt.DONE;
+			
+		END_IF
+		
+	E_FSM_TcpIpClt.ERROR:
+		THIS^._bError := TRUE;
+		THIS^._udiErrorId := THIS^._RcvData.nErrId;
+		
+		THIS^._eFSM_TcpIpClt := E_FSM_TcpIpClt.DONE;
+		
+	E_FSM_TcpIpClt.DONE:
+		
+		IF NOT THIS^._RcvData.bExecute THEN
+			Rcv := TRUE;
+			THIS^._eFSM_TcpIpClt := E_FSM_TcpIpClt.IDLE;
+		END_IF
+	
+	
+END_CASE
+
+THIS^._RcvData(
+				sSrvNetId	:= THIS^._sSrvNetId, 
+				hSocket		:= THIS^._hSocket, 
+				cbLen		:= udiMaxLen, 
+				pDest		:= pData, 
+				bExecute	:= _bExecute, 
+				tTimeout	:= THIS^._tTimeOut);]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Send" Id="{34bb67ac-1e48-4321-b5b8-4612b971103b}" FolderPath="Methods\">
+      <Declaration><![CDATA[METHOD PROTECTED Send : BOOL
+VAR_INPUT
+	pData	:POINTER TO BYTE;
+	udiLen	:UDINT;
+END_VAR
+
+VAR_INST
+	_bExecute	:BOOL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[CASE THIS^._eFSM_TcpIpClt OF
+	E_FSM_TcpIpClt.IDLE:
+		THIS^._bError := FALSE;
+		THIS^._udiErrorId := 0;
+		
+		THIS^._eFSM_TcpIpClt := E_FSM_TcpIpClt.SEND_DATA;
+		
+	E_FSM_TcpIpClt.SEND_DATA:
+		_bExecute := TRUE;
+		
+		IF THIS^._SendData.bBusy THEN
+			THIS^._eFSM_TcpIpClt := E_FSM_TcpIpClt.WAIT_DATA_SENT;
+			
+		END_IF
+	
+	E_FSM_TcpIpClt.WAIT_DATA_SENT:
+		_bExecute := FALSE;
+		
+		IF THIS^._SendData.bError THEN
+			THIS^._eFSM_TcpIpClt := E_FSM_TcpIpClt.ERROR;
+			
+		ELSIF NOT THIS^._SendData.bBusy THEN
+			THIS^._eFSM_TcpIpClt := E_FSM_TcpIpClt.DONE;
+			
+		END_IF
+
+	E_FSM_TcpIpClt.ERROR:
+		THIS^._bError := TRUE;
+		THIS^._udiErrorId := THIS^._SendData.nErrId;
+		
+		THIS^._eFSM_TcpIpClt := E_FSM_TcpIpClt.DONE;
+		
+	E_FSM_TcpIpClt.DONE:
+		
+		IF NOT THIS^._SendData.bExecute THEN
+			Send := TRUE;
+			THIS^._eFSM_TcpIpClt := E_FSM_TcpIpClt.IDLE;
+		END_IF
+END_CASE
+
+THIS^._SendData(
+				sSrvNetId	:= THIS^._sSrvNetId, 
+				hSocket		:= THIS^._hSocket, 
+				cbLen		:= udiLen, 
+				pSrc		:= pData, 
+				bExecute	:= _bExecute, 
+				tTimeout	:= THIS^._tTimeOut);
+				]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="udiErrorId" Id="{042d1d3f-6866-4582-833d-a10fbb175a81}" FolderPath="Properties\">
+      <Declaration><![CDATA[PROPERTY PUBLIC udiErrorId : UDINT]]></Declaration>
+      <Get Name="Get" Id="{13330fbf-d1c6-4ad6-a3d7-3e0234aa0518}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[udiErrorId := THIS^._udiErrorId ;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+  </POU>
+</TcPlcObject>

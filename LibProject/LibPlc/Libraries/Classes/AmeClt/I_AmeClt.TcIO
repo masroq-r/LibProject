@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <Itf Name="I_AmeClt" Id="{4f980f3b-ac59-01a1-1130-1f1838b80c81}">
+    <Declaration><![CDATA[INTERFACE I_AmeClt
+]]></Declaration>
+    <Method Name="AssyComplete_3011" Id="{7906d80b-f5f0-0a7a-3cec-f6f182544248}">
+      <Declaration><![CDATA[METHOD PUBLIC AssyComplete_3011 : BOOL
+VAR_INPUT
+	sSFC		:STRING;
+	eState		:E_AssyState;
+	usiOpIndex	:USINT;
+END_VAR
+]]></Declaration>
+    </Method>
+  </Itf>
+</TcPlcObject>

@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <DUT Name="E_FSM_TcpIpClt" Id="{5205b5e3-6a0c-0077-202d-f090064a393a}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+{attribute 'strict'}
+TYPE E_FSM_TcpIpClt :
+(
+	IDLE	:= 0,
+	OPEN_SOCKET,
+	WAIT_SOCKET_OPENED,
+	SEND_DATA,
+	WAIT_DATA_SENT,
+	RECEIVE_DATA,
+	WAIT_DATA_RECEIVED,
+	CLOSE_SOCKET,
+	WAIT_SOCKET_CLOSED,
+	ERROR,
+	DONE
+);
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

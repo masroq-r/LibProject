@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="f_StringLeft" Id="{7681d728-c0d1-000d-2d00-282d96951b68}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION f_StringLeft : BOOL
+VAR_INPUT
+	pSrc		:POINTER TO BYTE;
+	pDst		:POINTER TO BYTE;
+	udiSize		:UDINT;
+END_VAR
+VAR
+	_byNull		:BYTE := 16#00;
+	_udiIndex	:UDINT;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[FOR _udiIndex := 1 TO udiSize DO
+	;
+END_FOR]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

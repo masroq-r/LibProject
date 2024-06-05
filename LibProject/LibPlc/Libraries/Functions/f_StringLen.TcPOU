@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="f_StringLen" Id="{df5723e1-7deb-4a96-b26a-2a39e5a1fc63}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION f_StringLen : UDINT
+VAR_INPUT
+	pSrc		:POINTER TO BYTE;
+	udiMaxSize	:UDINT;
+END_VAR
+VAR
+	_byNull		:BYTE := 16#00;
+	_udiIndex	:UDINT;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[FOR _udiIndex := 0 TO udiMaxSize DO
+	IF pSrc^ = _byNull THEN
+		EXIT;
+	END_IF
+	
+	pSrc := pSrc + SIZEOF(BYTE);
+END_FOR
+
+f_StringLen := _udiIndex;]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

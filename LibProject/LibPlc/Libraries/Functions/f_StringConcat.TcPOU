@@ -1,0 +1,76 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="f_StringConcat" Id="{a6322308-9f60-029c-341f-f952cc397437}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION f_StringConcat : BOOL
+VAR_INPUT
+	pSrc1		:POINTER TO BYTE;
+	pSrc2		:POINTER TO BYTE;
+	pDst		:POINTER TO BYTE;
+	udiDstSize	:UDINT;
+END_VAR
+VAR
+	_byNull		:BYTE := 16#00;
+	_pSrc1		:POINTER TO BYTE;
+	_pSrc2		:POINTER TO BYTE;
+	_pDst		:POINTER TO BYTE;
+	_udiDstSize	:UDINT;
+	_udiIndex	:UDINT;
+	_udiIndexStartCleaning :UDINT;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[_pSrc1 	:= pSrc1;
+_pSrc2 	:= pSrc2;
+_pDst 	:= pDst;
+_udiDstSize := udiDstSize - 1;
+
+FOR _udiIndex := 1 TO _udiDstSize DO
+	IF _pSrc1^ <> _byNull THEN
+		// Concatenate Src1 to Dst
+		_pDst^ := _pSrc1^;
+		
+		_pSrc1 := _pSrc1 + SIZEOF(BYTE);
+		_pDst := _pDst + SIZEOF(BYTE);
+	ELSE
+		FOR _udiIndex := _udiIndex TO _udiDstSize DO
+			// Concatenate Src1 to Dst
+			IF _pSrc2^ <> _byNull THEN
+				_pDst^ := _pSrc2^;
+				
+				_pSrc2 := _pSrc2 + SIZEOF(BYTE);
+				_pDst := _pDst + SIZEOF(BYTE);
+			ELSE
+				JMP lbl_Complete;
+			END_IF
+			
+			IF _udiIndex = _udiDstSize THEN
+				JMP lbl_Complete;
+			END_IF
+		END_FOR	
+	END_IF
+	
+	IF _udiIndex = _udiDstSize THEN
+		JMP lbl_Complete;
+	END_IF
+END_FOR
+
+lbl_Complete:
+FOR _udiIndexStartCleaning := _udiIndex TO _udiDstSize DO
+	// Cleaning of Dst
+	IF _pDst^ <> _byNull THEN
+		_pDst^ := _byNull;
+		
+		_pDst := _pDst + SIZEOF(BYTE);
+	ELSE
+		EXIT;
+	END_IF
+END_FOR	
+
+IF _udiIndex <= _udiDstSize AND _udiIndex > 1 (*AND _pSrc1^ = _byNull AND _pSrc2^ = _byNull*) THEN
+	f_StringConcat := TRUE;
+END_IF
+
+]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

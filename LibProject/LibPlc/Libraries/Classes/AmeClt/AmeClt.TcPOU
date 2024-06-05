@@ -1,0 +1,159 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="AmeClt" Id="{7afb484f-e0ae-40d6-9e55-6bf9b6778827}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK PUBLIC AmeClt EXTENDS TcpIpClt Implements I_AmeClt
+VAR
+	_sMsgToSend			:STRING;
+	_sSeparator			:STRING(1) 	:= '|';
+	
+	
+	_eFSM_SendRcvSq		:(
+						IDLE_SendRcvSq,
+						OPEN_SOCKET_SendRcvSq,
+						SEND_DATA_SendRcvSq,
+						RCV_DATA_SendRcvSq,
+						ERROR_SendRcvSq,
+						DONE_SendRcvSq);
+	_eFSM_AmeClientSq	:(
+						IDLE_AmeClientSq,
+						CREATE_MSG_TO_SEND_AmeClientSq,
+						CALL_SEND_RCV_SQ_AmeClientSq,
+						ERROR_AmeClientSq,
+						DONE_AmeClientSq);
+END_VAR
+
+VAR CONSTANT
+	_sTYPE	:STRING(1) := '1';
+END_VAR
+
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Folder Name="Methods" Id="{e0a97ff2-9df1-0c9b-061c-09c9ad1cf88c}">
+      <Folder Name="Assy" Id="{10fdf523-8c5a-0a0d-38dd-3b31e75924fd}" />
+    </Folder>
+    <Method Name="AssyComplete_3011" Id="{4067330e-bc67-035b-24b2-01db049816dd}" FolderPath="Methods\Assy\">
+      <Declaration><![CDATA[METHOD PUBLIC AssyComplete_3011 : BOOL
+VAR_INPUT
+	sSFC		:STRING;
+	eState		:E_AssyState;
+	usiOpIndex	:USINT;
+END_VAR
+
+VAR
+	_sActionCall	:STRING(4) 	:= '3011';
+	_sState			:STRING(1);
+	_sOpIndex		:STRING(2);	
+	_bError			:BOOL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[CASE _eFSM_AmeClientSq OF
+	IDLE_AmeClientSq:
+		THIS^._eFSM_AmeClientSq := CREATE_MSG_TO_SEND_AmeClientSq;
+		
+	CREATE_MSG_TO_SEND_AmeClientSq:
+		_sState	:= INT_TO_STRING(eState);
+		_sOpIndex := USINT_TO_STRING(usiOpIndex);
+		
+		IF NOT _bError AND_THEN NOT f_StringConcat(ADR(THIS^._sTYPE),ADR(THIS^._sSeparator),ADR(THIS^._sMsgToSend),SIZEOF(THIS^._sMsgToSend)) THEN
+			_bError := TRUE;
+		END_IF
+			
+		IF NOT _bError AND_THEN NOT f_StringConcat(ADR(THIS^._sMsgToSend),ADR(_sActionCall),ADR(THIS^._sMsgToSend),SIZEOF(THIS^._sMsgToSend)) THEN
+			_bError := TRUE;
+		END_IF
+		
+		IF NOT _bError AND_THEN NOT f_StringConcat(ADR(THIS^._sMsgToSend),ADR(THIS^._sSeparator),ADR(THIS^._sMsgToSend),SIZEOF(THIS^._sMsgToSend)) THEN
+			_bError := TRUE;
+		END_IF
+		
+		IF NOT _bError AND_THEN NOT f_StringConcat(ADR(THIS^._sMsgToSend),ADR(sSFC),ADR(THIS^._sMsgToSend),SIZEOF(THIS^._sMsgToSend)) THEN
+			_bError := TRUE;
+		END_IF
+		
+		IF NOT _bError AND_THEN NOT f_StringConcat(ADR(THIS^._sMsgToSend),ADR(THIS^._sSeparator),ADR(THIS^._sMsgToSend),SIZEOF(THIS^._sMsgToSend)) THEN
+			_bError := TRUE;
+		END_IF
+		
+		IF NOT _bError AND_THEN NOT f_StringConcat(ADR(THIS^._sMsgToSend),ADR(_sState),ADR(THIS^._sMsgToSend),SIZEOF(THIS^._sMsgToSend)) THEN
+			_bError := TRUE;
+		END_IF
+		
+		IF NOT _bError AND_THEN NOT f_StringConcat(ADR(THIS^._sMsgToSend),ADR(THIS^._sSeparator),ADR(THIS^._sMsgToSend),SIZEOF(THIS^._sMsgToSend)) THEN
+			_bError := TRUE;
+		END_IF
+		
+		IF NOT _bError AND_THEN NOT f_StringConcat(ADR(THIS^._sMsgToSend),ADR(_sOpIndex),ADR(THIS^._sMsgToSend),SIZEOF(THIS^._sMsgToSend)) THEN
+			_bError := TRUE;
+		END_IF
+		
+		THIS^._eFSM_AmeClientSq := CALL_SEND_RCV_SQ_AmeClientSq;
+		IF _bError THEN
+			THIS^._eFSM_AmeClientSq := ERROR_AmeClientSq;
+		END_IF
+		
+	CALL_SEND_RCV_SQ_AmeClientSq:
+		IF SendRcvSq() THEN
+			THIS^._eFSM_AmeClientSq := DONE_AmeClientSq;
+		END_IF
+		
+		IF bError THEN
+			THIS^._eFSM_AmeClientSq := ERROR_AmeClientSq;
+		END_IF
+		
+	ERROR_AmeClientSq:
+		THIS^._eFSM_AmeClientSq := DONE_AmeClientSq;
+		
+	DONE_AmeClientSq:
+		THIS^._eFSM_AmeClientSq := IDLE_AmeClientSq;
+		AssyComplete_3011 := TRUE;		
+END_CASE
+
+
+
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="SendRcvSq" Id="{aca7c2f9-54f5-0211-29df-0c15e417a365}" FolderPath="Methods\">
+      <Declaration><![CDATA[METHOD PROTECTED SendRcvSq : BOOL
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[CASE THIS^._eFSM_SendRcvSq OF
+	IDLE_SendRcvSq:
+		THIS^._eFSM_SendRcvSq := OPEN_SOCKET_SendRcvSq;
+		
+	OPEN_SOCKET_SendRcvSq:
+		IF OpenSocket() THEN
+			THIS^._eFSM_SendRcvSq := SEND_DATA_SendRcvSq;
+		END_IF
+		
+		IF bError THEN
+			THIS^._eFSM_SendRcvSq := ERROR_SendRcvSq;
+		END_IF
+		
+	SEND_DATA_SendRcvSq:
+		IF Send(ADR(_sMsgToSend), f_StringLen(ADR(_sMsgToSend), SIZEOF(_sMsgToSend))) THEN
+			THIS^._eFSM_SendRcvSq := RCV_DATA_SendRcvSq;
+		END_IF
+		
+		IF bError THEN
+			THIS^._eFSM_SendRcvSq := ERROR_SendRcvSq;
+		END_IF
+		
+	RCV_DATA_SendRcvSq:
+		THIS^._eFSM_SendRcvSq := DONE_SendRcvSq;
+		
+	ERROR_SendRcvSq:
+		// Error handling could be implemented here
+		THIS^._eFSM_SendRcvSq := DONE_SendRcvSq;
+		
+	DONE_SendRcvSq:
+		THIS^._eFSM_SendRcvSq := IDLE_SendRcvSq;
+		SendRcvSq := TRUE;		
+END_CASE]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

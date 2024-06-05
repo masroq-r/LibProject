@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="Testing" Id="{b6acff85-0853-0c5e-1d96-b2ec4e069e6e}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM Testing
+VAR
+	_I_AmeClt	:I_AmeClt := APIs._AmeClt;
+	_sSfc		:STRING := 'Testing_SFC';
+	
+	_bAssyComplete	:BOOL;
+	_uiAssyCompleteCycles	:UINT;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF _bAssyComplete THEN
+	_uiAssyCompleteCycles := _uiAssyCompleteCycles + 1;
+END_IF
+
+IF _bAssyComplete  AND_THEN _I_AmeClt.AssyComplete_3011(_sSfc, E_AssyState.PASS, 1) THEN
+	_bAssyComplete := FALSE;
+END_IF]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

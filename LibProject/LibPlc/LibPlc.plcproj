@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <FileVersion>1.0.0.0</FileVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{587326ee-ced8-4fd5-b8ed-f1fcb2fb4a37}</ProjectGuid>
+    <SubObjectsSortedByName>True</SubObjectsSortedByName>
+    <DownloadApplicationInfo>true</DownloadApplicationInfo>
+    <WriteProductVersion>false</WriteProductVersion>
+    <GenerateTpy>false</GenerateTpy>
+    <Name>LibPlc</Name>
+    <ProgramVersion>3.1.4024.0</ProgramVersion>
+    <Application>{1d65c47f-674e-4058-a9ee-3ad0015dccb5}</Application>
+    <TypeSystem>{77a27468-3698-4252-9ae1-1eeed52d6215}</TypeSystem>
+    <Implicit_Task_Info>{229b3944-cac0-4f36-9a21-78b654e9dc20}</Implicit_Task_Info>
+    <Implicit_KindOfTask>{9247824c-42f2-492f-8ee1-e1975b921cbb}</Implicit_KindOfTask>
+    <Implicit_Jitter_Distribution>{520a20b8-8e29-4a80-9b27-62f1da592bc2}</Implicit_Jitter_Distribution>
+    <LibraryReferences>{de8079d7-b77c-469d-8e65-75e003209938}</LibraryReferences>
+    <Released>false</Released>
+    <CombineIds>true</CombineIds>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Libraries\Classes\AmeClt\AmeClt.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Libraries\Classes\AmeClt\E_AssyState.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Libraries\Classes\AmeClt\I_AmeClt.TcIO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Libraries\Classes\TcpIp\Client\E_FSM_TcpIpClt.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Libraries\Classes\TcpIp\Client\TcpIpClt.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Libraries\Functions\f_StringConcat.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Libraries\Functions\f_StringLeft.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Libraries\Functions\f_StringLen.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="PlcTask.TcTTO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\APIs.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\MAIN.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\Testing.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Libraries" />
+    <Folder Include="Libraries\Classes\AmeClt" />
+    <Folder Include="Libraries\Classes\TcpIp" />
+    <Folder Include="Libraries\Classes\TcpIp\Client" />
+    <Folder Include="Libraries\Functions" />
+    <Folder Include="Libraries\Classes" />
+    <Folder Include="POUs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PlaceholderReference Include="Tc2_Standard">
+      <DefaultResolution>Tc2_Standard, * (Beckhoff Automation GmbH)</DefaultResolution>
+      <Namespace>Tc2_Standard</Namespace>
+    </PlaceholderReference>
+    <PlaceholderReference Include="Tc2_System">
+      <DefaultResolution>Tc2_System, * (Beckhoff Automation GmbH)</DefaultResolution>
+      <Namespace>Tc2_System</Namespace>
+    </PlaceholderReference>
+    <PlaceholderReference Include="Tc2_TcpIp">
+      <DefaultResolution>Tc2_TcpIp, * (Beckhoff Automation GmbH)</DefaultResolution>
+    </PlaceholderReference>
+    <PlaceholderReference Include="Tc3_Module">
+      <DefaultResolution>Tc3_Module, * (Beckhoff Automation GmbH)</DefaultResolution>
+      <Namespace>Tc3_Module</Namespace>
+    </PlaceholderReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="LibPlc.tmc">
+      <SubType>Content</SubType>
+    </None>
+  </ItemGroup>
+  <ProjectExtensions>
+    <PlcProjectOptions>
+      <XmlArchive>
+        <Data>
+          <o xml:space="preserve" t="OptionKey">
+      <v n="Name">"&lt;ProjectRoot&gt;"</v>
+      <d n="SubKeys" t="Hashtable" />
+      <d n="Values" t="Hashtable" />
+    </o>
+        </Data>
+        <TypeList>
+          <Type n="Hashtable">System.Collections.Hashtable</Type>
+          <Type n="OptionKey">{54dd0eac-a6d8-46f2-8c27-2f43c7e49861}</Type>
+          <Type n="String">System.String</Type>
+        </TypeList>
+      </XmlArchive>
+    </PlcProjectOptions>
+  </ProjectExtensions>
+</Project>
