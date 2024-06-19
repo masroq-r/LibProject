@@ -16,6 +16,14 @@ VAR_INPUT
 END_VAR
 ]]></Declaration>
     </Method>
+    <Method Name="AssyGetDetails_1026" Id="{837f3ab0-4510-08d2-26ee-b8c298c0563d}" FolderPath="Methods\Assy\">
+      <Declaration><![CDATA[METHOD AssyGetDetails_1026 : BOOL
+VAR_INPUT
+	sSFC		:STRING;
+	usiOpIndex	:USINT;
+END_VAR
+]]></Declaration>
+    </Method>
     <Property Name="sMsgReceived" Id="{8259869f-7855-0f20-397b-65ea41301b0b}" FolderPath="Properties\">
       <Declaration><![CDATA[PROPERTY sMsgReceived : STRING(P_AmeClt.MAX_SIZE_MSG_TO_RCV)]]></Declaration>
       <Get Name="Get" Id="{19b9ddc2-c7e9-0285-3a59-17831a344096}">

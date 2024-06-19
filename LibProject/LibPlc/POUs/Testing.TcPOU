@@ -8,19 +8,27 @@ VAR
 	_sMsgToSend				:STRING(P_AmeClt.MAX_SIZE_MSG_TO_SEND);
 	_sMsgReceived			:STRING(P_AmeClt.MAX_SIZE_MSG_TO_RCV);
 	
+	_bAssyGetDetails		:BOOL;
 	_bAssyComplete			:BOOL;
 	_uiAssyCompleteCycles	:UINT;
 	
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[IF _bAssyComplete THEN
+      <ST><![CDATA[IF _bAssyGetDetails OR _bAssyComplete THEN
 	_uiAssyCompleteCycles := _uiAssyCompleteCycles + 1;
 END_IF
+
 IF _bAssyComplete  AND_THEN _I_AmeClt.AssyComplete_3011(_sSfc, E_AssyState.PASS, 1) THEN
 	_sMsgToSend := _I_AmeClt.sMsgToSend;
 	_sMsgReceived := _I_AmeClt.sMsgReceived;
 	_bAssyComplete := FALSE;
+END_IF
+
+IF _bAssyGetDetails  AND_THEN _I_AmeClt.AssyGetDetails_1026(_sSfc, 1) THEN
+	_sMsgToSend := _I_AmeClt.sMsgToSend;
+	_sMsgReceived := _I_AmeClt.sMsgReceived;
+	_bAssyGetDetails := FALSE;
 END_IF
 ]]></ST>
     </Implementation>

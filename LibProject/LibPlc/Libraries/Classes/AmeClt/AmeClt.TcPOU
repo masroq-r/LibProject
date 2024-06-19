@@ -35,7 +35,7 @@ END_VAR
 VAR
 	_sActionCall	:STRING(4) 	:= '3011';
 	_sState			:STRING(1);
-	_sOpIndex		:STRING(2);	
+	_sOpIndex		:STRING(2);
 	_bError			:BOOL;
 END_VAR
 ]]></Declaration>
@@ -115,6 +115,84 @@ END_CASE
 
 
 ]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="AssyGetDetails_1026" Id="{704633e2-6953-0531-1195-52cab7923bad}" FolderPath="Methods\Assy\">
+      <Declaration><![CDATA[METHOD PUBLIC AssyGetDetails_1026 : BOOL
+VAR_INPUT
+	sSFC		:STRING;
+	usiOpIndex	:USINT;
+END_VAR
+
+VAR
+	_sActionCall	:STRING(4) 	:= '1026';
+	_sOpIndex		:STRING(2);
+	_bError			:BOOL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[CASE _eFSM_AmeCltSq OF
+	E_FSM_AmeCltSq.IDLE:
+		IF THIS^._eFSM_SendRcvSq = E_FSM_SendRcvSq.ERROR THEN
+			THIS^._eFSM_SendRcvSq := E_FSM_SendRcvSq.IDLE;
+		END_IF
+		
+		THIS^._eFSM_AmeCltSqLastState := E_FSM_AmeCltSq.IDLE;
+		THIS^._eFSM_AmeCltSq := E_FSM_AmeCltSq.CREATE_MSG_TO_SEND;
+		
+	E_FSM_AmeCltSq.CREATE_MSG_TO_SEND:
+		_sOpIndex := USINT_TO_STRING(usiOpIndex);
+		
+		IF NOT _bError AND_THEN NOT f_StringConcat(ADR(THIS^._sTYPE),ADR(THIS^._sSeparator),ADR(THIS^._sMsgToSend),SIZEOF(THIS^._sMsgToSend)) THEN
+			_bError := TRUE;
+		END_IF
+			
+		IF NOT _bError AND_THEN NOT f_StringConcat(ADR(THIS^._sMsgToSend),ADR(_sActionCall),ADR(THIS^._sMsgToSend),SIZEOF(THIS^._sMsgToSend)) THEN
+			_bError := TRUE;
+		END_IF
+		
+		IF NOT _bError AND_THEN NOT f_StringConcat(ADR(THIS^._sMsgToSend),ADR(THIS^._sSeparator),ADR(THIS^._sMsgToSend),SIZEOF(THIS^._sMsgToSend)) THEN
+			_bError := TRUE;
+		END_IF
+		
+		IF NOT _bError AND_THEN NOT f_StringConcat(ADR(THIS^._sMsgToSend),ADR(sSFC),ADR(THIS^._sMsgToSend),SIZEOF(THIS^._sMsgToSend)) THEN
+			_bError := TRUE;
+		END_IF
+		
+		IF NOT _bError AND_THEN NOT f_StringConcat(ADR(THIS^._sMsgToSend),ADR(THIS^._sSeparator),ADR(THIS^._sMsgToSend),SIZEOF(THIS^._sMsgToSend)) THEN
+			_bError := TRUE;
+		END_IF
+		
+		IF NOT _bError AND_THEN NOT f_StringConcat(ADR(THIS^._sMsgToSend),ADR(_sOpIndex),ADR(THIS^._sMsgToSend),SIZEOF(THIS^._sMsgToSend)) THEN
+			_bError := TRUE;
+		END_IF
+		
+		THIS^._eFSM_AmeCltSqLastState := E_FSM_AmeCltSq.CREATE_MSG_TO_SEND;
+		THIS^._eFSM_AmeCltSq := E_FSM_AmeCltSq.CALL_SEND_RCV_SQ;
+		IF _bError THEN
+			THIS^._eFSM_AmeCltSq := E_FSM_AmeCltSq.ERROR;
+		END_IF
+		
+	E_FSM_AmeCltSq.CALL_SEND_RCV_SQ:
+		IF SendRcvSq() THEN
+			THIS^._eFSM_AmeCltSqLastState := E_FSM_AmeCltSq.CALL_SEND_RCV_SQ;
+			THIS^._eFSM_AmeCltSq := E_FSM_AmeCltSq.DONE;
+		END_IF
+		
+		IF bError THEN
+			THIS^._eFSM_AmeCltSqLastState := E_FSM_AmeCltSq.CALL_SEND_RCV_SQ;
+			THIS^._eFSM_AmeCltSq := E_FSM_AmeCltSq.ERROR;
+		END_IF
+		
+	E_FSM_AmeCltSq.ERROR:
+		AssyGetDetails_1026 := TRUE;
+		
+	E_FSM_AmeCltSq.DONE:
+		AssyGetDetails_1026 := TRUE;
+		
+		THIS^._eFSM_AmeCltSqLastState := E_FSM_AmeCltSq.DONE;
+		THIS^._eFSM_AmeCltSq := E_FSM_AmeCltSq.IDLE;	
+END_CASE]]></ST>
       </Implementation>
     </Method>
     <Method Name="SendRcvSq" Id="{aca7c2f9-54f5-0211-29df-0c15e417a365}" FolderPath="Methods\">
