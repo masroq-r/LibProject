@@ -48,10 +48,16 @@
     <Compile Include="Libraries\Functions\f_StringConcat.TcPOU">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Libraries\Functions\f_StringFind.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Libraries\Functions\f_StringLeft.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Libraries\Functions\f_StringLen.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Libraries\Functions\f_StringRight.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="PlcTask.TcTTO">

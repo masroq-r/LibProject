@@ -5,47 +5,55 @@
 VAR_INPUT
 	pSrc		:POINTER TO BYTE;
 	pDst		:POINTER TO BYTE;
-	udiSize		:UDINT;				// String size to extract
 	udiDstSize	:UDINT;				// Destination size
+	udiLen		:UDINT;				// String length to extract
 END_VAR
 VAR
+	_pSrc		:POINTER TO BYTE;
+	_pDst		:POINTER TO BYTE;
 	_udiDstSize	:UDINT;				// Destination size
 	_byNull		:BYTE := 16#00;
 	_udiIndex	:UDINT;
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[_udiDstSize := udiDstSize - 1;
+      <ST><![CDATA[_pSrc := pSrc;
+_pDst := pDst;
+_udiDstSize := udiDstSize - 1;
 
-// String size to extract must not be geater than destination size
-IF udiSize > _udiDstSize THEN
-	RETURN;
+// String size to extract must not be greater than destination size
+IF udiLen > _udiDstSize THEN
+	_udiIndex := 1;
+	JMP lbl_CleanDestination;
 END_IF
 
 // Extracting data
-FOR _udiIndex := 1 TO udiSize DO
-	IF pSrc^ <> _byNull THEN
-		pDst^ := pSrc^;
+FOR _udiIndex := 1 TO udiLen DO
+	IF _pSrc^ <> _byNull THEN
+		_pDst^ := _pSrc^;
 	ELSE
 		EXIT;
 	END_IF
 	
-	pSrc := pSrc + SIZEOF(BYTE);
-	pDst := pDst + SIZEOF(BYTE);
+	_pSrc := _pSrc + SIZEOF(BYTE);
+	_pDst := _pDst + SIZEOF(BYTE);
 END_FOR
 
 // Clean destination data
-FOR _udiIndex := _udiIndex TO _udiDstSize DO
-	IF pDst^ <> _byNull THEN
-		pDst^ := _byNull;
-	ELSE
-		EXIT;
-	END_IF
+lbl_CleanDestination:
+	FOR _udiIndex := _udiIndex TO _udiDstSize DO
+		IF _pDst^ <> _byNull THEN
+			_pDst^ := _byNull;
+		ELSE
+			EXIT;
+		END_IF
+		
+		_pDst := _pDst + SIZEOF(BYTE);
+	END_FOR
 	
-	pDst := pDst + SIZEOF(BYTE);
-END_FOR
-
-f_StringLeft := TRUE;]]></ST>
+	IF udiLen <> 0 AND _udiIndex > udiLen THEN
+		f_StringLeft := TRUE;
+	END_IF]]></ST>
     </Implementation>
   </POU>
 </TcPlcObject>

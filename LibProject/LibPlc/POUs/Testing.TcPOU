@@ -12,6 +12,18 @@ VAR
 	_bAssyComplete			:BOOL;
 	_uiAssyCompleteCycles	:UINT;
 	
+	_sSrc					:STRING(2000) := '1234Hola';
+	_sStrToFind				:STRING(10) := '';
+	_udiStrToFindIndexPos	:UDINT;
+	_bLeft					:BOOL;
+	_udiLeftIndex			:UDINT;
+	_sStrleft				:STRING;
+	_bRight					:BOOL;
+	_udiRightIndex			:UDINT;
+	_sStrRight				:STRING(2000);
+	
+	
+	
 END_VAR
 ]]></Declaration>
     <Implementation>
@@ -30,6 +42,15 @@ IF _bAssyGetDetails  AND_THEN _I_AmeClt.AssyGetDetails_1026(_sSfc, 1) THEN
 	_sMsgReceived := _I_AmeClt.sMsgReceived;
 	_bAssyGetDetails := FALSE;
 END_IF
+
+//_udiStrToFindIndexPos := f_StringFind(ADR(_sSrc), SIZEOF(_sSrc), _sStrToFind);
+_udiStrToFindIndexPos := f_StringFind(ADR(_sSrc), SIZEOF(_sSrc), 'Handle_00:') + f_StringLen(ADR('Handle_00:'), SIZEOF('Handle_00:'));
+
+_bRight := f_StringRight(ADR(_sSrc), ADR(_sStrRight), SIZEOF(_sStrRight), _udiStrToFindIndexPos);
+
+_bLeft := f_StringLeft(ADR(_sSrc), ADR(_sStrLeft), SIZEOF(_sStrLeft), _udiLeftIndex);
+
+//_bRight := f_StringRight(ADR(_sSrc), ADR(_sStrRight), SIZEOF(_sStrRight), _udiRightIndex);
 ]]></ST>
     </Implementation>
   </POU>
