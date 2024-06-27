@@ -1,0 +1,60 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="f_StringFind" Id="{1e9ec080-a8a0-057b-2c41-f89de64ae07a}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION f_StringFind : UDINT
+VAR_INPUT
+	pSrc		:POINTER TO BYTE;			// string source
+	udiSrcSize	:UDINT;						// string length source
+	sStrToFind	:STRING(MAX_STRING_LENGTH);
+END_VAR
+VAR
+	_pSrc				:POINTER TO BYTE;
+	_udiSrcStrLen		:UDINT;
+	_udiStrToFindLen	:UDINT;
+	_pStrExtracted		:POINTER TO BYTE;
+	_sStrExtracted		:STRING(MAX_STRING_LENGTH);
+	
+	_udiStrToFindIndex	:UDINT;
+	_udiIndex			:UDINT;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[_udiSrcStrLen		:= f_StringLen(pSrc,udiSrcSize);
+_udiStrToFindLen	:= f_StringLen(ADR(sStrToFind),SIZEOF(sStrToFind));
+
+// if source string length is less that string to find length is not possible execute the logic
+IF _udiSrcStrLen < _udiStrToFindLen OR  _udiSrcStrLen = 0 OR _udiStrToFindLen = 0 THEN
+	f_StringFind := 0;
+	RETURN;
+END_IF
+
+_pSrc := pSrc;
+REPEAT
+	_udiIndex := _udiIndex + 1;	
+
+	_pStrExtracted := ADR(_sStrExtracted);
+	FOR _udiStrToFindIndex := 1 TO _udiStrToFindLen DO
+		_pStrExtracted^ := _pSrc^;
+		_pStrExtracted 	:= _pStrExtracted + SIZEOF(BYTE);
+		_pSrc 			:= _pSrc + SIZEOF(BYTE);
+	END_FOR
+	
+	IF sStrToFind = _sStrExtracted THEN
+		f_StringFind := _udiIndex;
+		EXIT;
+	END_IF
+	
+	_pSrc := pSrc + (_udiIndex * SIZEOF(BYTE));
+UNTIL
+	_udiIndex > (_udiSrcStrLen - _udiStrToFindLen)
+END_REPEAT
+
+IF _udiIndex > (_udiSrcStrLen - _udiStrToFindLen) THEN	// String to find is not existing
+	f_StringFind := 0;
+END_IF
+
+memset(_pStrExtracted, 16#00, _udiStrToFindLen);
+]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

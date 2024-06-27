@@ -1,0 +1,59 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="f_StringRight" Id="{b25aba6e-730f-0abe-1c26-a39a0f6a0527}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION f_StringRight : BOOL
+VAR_INPUT
+	pSrc		:POINTER TO BYTE;	// Source pointer
+	pDst		:POINTER TO BYTE;	// Destination pointer
+	udiDstSize	:UDINT;				// Destination size
+	udiStartPos	:UDINT;
+END_VAR
+VAR
+	_pSrcStartPos	:POINTER TO BYTE;
+	_pDst		:POINTER TO BYTE;
+	_udiDstSize	:UDINT;
+	_byNull		:BYTE := 16#00;
+	_udiIndex	:UDINT;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[_pSrcStartPos := pSrc + ((udiStartPos - 1) * SIZEOF(BYTE));
+_pDst := pDst;
+_udiDstSize := udiDstSize - 1;
+
+// Start position must not be cero
+IF udiStartPos = 0 THEN
+	_udiIndex := 1;
+	JMP lbl_CleanDestination;
+END_IF
+
+//Extracting data
+FOR _udiIndex := 1 TO udiDstSize DO
+	IF _pSrcStartPos^ <> _byNull THEN
+		_pDst^ := _pSrcStartPos^;
+	ELSE
+		EXIT;
+	END_IF
+	
+	_pSrcStartPos := _pSrcStartPos + SIZEOF(BYTE);
+	_pDst := _pDst + SIZEOF(BYTE);
+END_FOR
+
+// Clean destination data
+lbl_CleanDestination:
+	FOR _udiIndex := _udiIndex TO _udiDstSize DO
+		IF _pDst^ <> _byNull THEN
+			_pDst^ := _byNull;
+		ELSE
+			EXIT;
+		END_IF
+		
+		_pDst := _pDst + SIZEOF(BYTE);
+	END_FOR
+	
+	IF udiStartPos <> 0  AND pDst^ <> _byNull THEN
+		f_StringRight := TRUE;
+	END_IF]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>
