@@ -4,7 +4,6 @@
     <Declaration><![CDATA[PROGRAM APIs
 VAR
 	_AmeClt	:AmeClt(sSrvNetId := '', sRemoteHost := '192.168.103.17', udiRemotePort := 2001, tTimeout := DEFAULT_ADS_TIMEOUT);
-	//_AmeClt	:AmeClt(sSrvNetId := '', sRemoteHost := '192.168.103.17', udiRemotePort := 2001, tTimeout := DEFAULT_ADS_TIMEOUT);
 END_VAR
 ]]></Declaration>
     <Implementation>
